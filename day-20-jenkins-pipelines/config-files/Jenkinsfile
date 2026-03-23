@@ -1,0 +1,45 @@
+pipeline {
+  agent any
+  tools {
+    maven 'maven-3.9.14'
+  }
+
+  stages{
+    stage('Checkout Code'){
+      steps{
+        checkout scmGit(
+          branches: [[name: 'main']], 
+          userRemoteConfigs: [[
+            url: 'https://github.com/kbindesh/maven-project.git',
+            credentialsId: 'github-credential']])
+      }
+    }
+    stage('Clean and verify App'){
+      steps{
+        sh 'mvn clean verify'
+      }
+      post {
+        success {
+          junit 'target/surefire-reports/**/*.xml'
+        }
+      }
+    }
+    stage('SonarQube Analysis') {
+      steps {
+        // Inject SonarQube server details and run analysis
+        withSonarQubeEnv(credentialsId: 'sonarqube', installationName: 'sonarqube-server') { // Replace with actual IDs
+            sh 'mvn sonar:sonar -Dsonar.projectKey=mvn-org_project -Dsonar.organization=mvn-org -Dsonar.projectName=project -Dsonar.host.url=https://sonarcloud.io'
+        }
+      }
+    }
+    stage('Quality Gate Check') {
+      steps {
+          // Wait for the SonarQube analysis to complete and check the Quality Gate status
+          // This step will fail the pipeline if the Quality Gate conditions are not met
+          timeout(time: 1, unit: 'MINUTES') { 
+              waitForQualityGate abortPipeline: true
+          }
+      }
+    }
+  }
+}
