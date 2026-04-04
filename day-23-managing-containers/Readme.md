@@ -1,4 +1,4 @@
-# Managing Docker Containers
+# Day-23: Managing Docker Containers
 
 In this section, you will learn the following:
 
@@ -10,13 +10,13 @@ In this section, you will learn the following:
 - Attaching to a running container
 - Retrieving container logs
 
-## Technical Requirements
+## Step-23.1: Technical Requirements
 
 - Docker Host (with running docker daemon and docker client)
 
-## Running first Docker Container
+## Step-23.2: Running first Docker Container
 
-```
+```bash
 # Check the docker version
 docker version
 
@@ -30,9 +30,9 @@ docker container run alpine echo "Hello World"
 docker container run centos ping -c 5 127.0.0.1
 ```
 
-## Listing Containers
+## Step-23.3: Listing Containers
 
-```
+```bash
 # List only "Running" Containers (default)
 docker container ls
 OR
@@ -49,7 +49,7 @@ docker ps -a
 docker container ls --quiet
 ```
 
-## Starting, Stopping Containers
+## Step-23.4: Starting, Stopping Containers
 
 In the previous step, you successfully ran a container. Let's create another Container:
 
@@ -81,7 +81,7 @@ docker container start $CONTAINER_NAME_OR_ID
 docker container start webapp
 ```
 
-## Inspecting Containers
+## Step-23.5: Inspecting Containers
 
 - To get more information about a specific container, we can use the `docker container inspect` command.
 
@@ -90,7 +90,7 @@ docker container start webapp
 docker container inspect webapp
 ```
 
-## Execute (exec) command into a running Container
+## Step-23.6: Execute (exec) command into a running Container
 
 - Sometimes, we might want to run another process/command inside an already-running container.
 - A typical reason could be - You trying to debug a container which is running an application.
@@ -124,7 +124,7 @@ OR
 Type "exit"
 ```
 
-## Retrieving Container logs
+## Step-23.7: Retrieving Container logs
 
 - It is always good to get some logging information about application to figure out what the application is doing at a given time.
 - To check whether there are any problems associated with the App;
@@ -148,7 +148,7 @@ docker container logs --tail 5 -f webapp
 [Press "Ctrl + C" to stop following the logs]
 ```
 
-## Removing/Deleting Containers
+## Step-23.8: Removing/Deleting Containers
 
 ```
 docker container rm $CONTAINER_NAME_OR_ID

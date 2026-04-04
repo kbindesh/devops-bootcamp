@@ -10,9 +10,9 @@ In this section, you will learn the following concepts:
 - Defining volumes in images
 - Configuring containers
 
-## Managing `Docker Volumes`
+## Step-25.1: Managing `Docker Volumes`
 
-### Getting help around docker volume
+### Step-25.1.1: Getting help around docker volume
 
 ```
 docker volume --help
@@ -20,7 +20,7 @@ docker volume --help
 # The preceding command will list all the volume related commands
 ```
 
-### Creating a Docker Volume
+### Step-25.1.2: Creating a Docker Volume
 
 ```bash
 
@@ -39,7 +39,7 @@ docker volume inspect $VOLUME_NAME
 docker volume inspect datavol
 ```
 
-### Mounting a Docker Volume on a Container
+### Step-25.1.3: Mounting a Docker Volume on a Container
 
 - Once you've created a named Docker Volume, you can mount it onto a container:
 
@@ -88,7 +88,7 @@ OR
 Press Ctrl + D
 ```
 
-### Removing a Docker Volume
+### Step-25.1.4: Removing a Docker Volume
 
 - Volumes can be removed using the docker volume rm command:
 
@@ -100,4 +100,4 @@ docker volume rm $VOLUME_NAME
 docker container rm -v -f $(docker container ls -aq)
 ```
 
-### Access Docker Volumes
+### Step-25.1.5: Access Docker Volumes
