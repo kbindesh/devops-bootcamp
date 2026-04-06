@@ -22,6 +22,8 @@ docker volume --help
 
 ### Step-25.1.2: Creating a Docker Volume
 
+- When you create a Docker volume, it is mapped with the `/var/lib/docker/volumes/sample/_data` directory of the host machine.
+
 ```bash
 
 # Create a Docker volume
@@ -88,7 +90,61 @@ OR
 Press Ctrl + D
 ```
 
-### Step-25.1.4: Removing a Docker Volume
+### Step-25.1.4: Using Host Volumes | Mount a volume on Container using Bind mount
+
+- A bind mount in Docker is a method of mapping a specific file or directory from your host machine's filesystem directly into a container
+
+- Key features
+  - Direct Mapping
+  - Real-time Syncing
+
+- When to use volume bind mount?
+  - When you are doing local development
+  - Configuration management
+  - Accessing host tools
+
+```bash
+# Using the --mount flag (recommended)
+docker run -d \
+  --name my-app \
+  --mount type=bind,source=/path/on/host,target=/app \
+  nginx:latest
+
+# Using the -v or --volume flag
+docker run -d -v /path/on/host:/app nginx:latest
+```
+
+- `Note`
+  - While using -v or --volume, if the host path doesn't exist, Docker will automatically create it as a directory
+
+### Step-25.1.5: Sharing data between Containers using Volume
+
+- There can be instances when we might want to share data between containers.
+- Say an application running in **Container-A** produces some data that will be consumed by another application running in **Container-B**. How can we achieve this?
+  - We can use Docker volumes for this purpose.
+  - We can create a volume and mount it to **Container-A**, as well as to **Container-B**.
+  - In this way, both container A and B will have access to the same data.
+
+```bash
+# Create a Volume i.e. shared-data
+docker volume create shared-data
+
+#  Create a Container "writer" and mount the "shared-data" volume on it
+docker container run -it --name writer -v shared-data:/data alpine /bin/sh
+
+# Create a file inside the container | it should succeed
+echo "I can create a file" > /data/sample.txt
+
+# Exit from the above container by pressing Ctrl+D or "exit"
+
+#  Create another container "reader" and mount the same "shared-data" volume on it in RO mode
+docker container run -it --name reader -v shared-data:/app/data:ro ubuntu:22.04 /bin/bash
+
+# You will land inside "reader" container | verify the file created in writer container
+ls -l /app/data
+```
+
+### Step-25.1.6: Removing a Docker Volume
 
 - Volumes can be removed using the docker volume rm command:
 
@@ -96,8 +152,9 @@ Press Ctrl + D
 # Delete an existing volume
 docker volume rm $VOLUME_NAME
 
-# To remove all running containers along with any anonymous volume associated with those containers
+# Delete all the existing volume
+docker volume rm $(docker volume ls -aq)
+
+# Remove all running containers along with any anonymous volume associated with those containers
 docker container rm -v -f $(docker container ls -aq)
 ```
-
-### Step-25.1.5: Access Docker Volumes
