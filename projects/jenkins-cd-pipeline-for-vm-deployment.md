@@ -1,6 +1,8 @@
-# Project-XX: Jenkins CI/CD pipeline for single-server web application deployment
+# Project-XX: Jenkins based CI/CD pipeline for building and deploying Python App on a VM
 
 ## Project Overview
+
+- In this project, we will create a Jenkins based continuous delivery pipeline for building and deploying a Python Flask Application on a Virtual Machine (EC2 Instance).
 
 ## Prerequisites
 
@@ -9,7 +11,7 @@
 
 ## Develop an Application (Python Flask)
 
-## Create a GitHub repository for Python Flask App
+## Create a GitHub repository for Python Flask App with a Webhook
 
 ## Push the Application code to GitHub
 
@@ -23,7 +25,7 @@
   - Key pair: create a new or select an existing keypair
   - Network and Subnet: leave to defaults
   - Security group
-    - Ingress: Allow SSH, HTTPS, HTTP
+    - Ingress: Allow SSH, HTTPS, HTTP, 5000
     - Egress: Default (allow all)
   - Storage: 10GB GP2
 
@@ -116,11 +118,11 @@ sudo systemctl status flaskapp
   6. Install the Dependencies on the server
   7. Restart the flaskapp service
 
-### Create Jenkins Crdentials for storing target server details
+### Create Jenkins Credentials for storing target server details
 
 - In order to allow Jenkins server to be able to connect to our target server (prod-server) and deploy application, we must create credentials and save the information over there.
 
-- There are two `credentials` that we will create:
+- We will create two Jenkins `credentials`, as follows:
   1. **ssh-key**
      - To store ssh private key of the target server
      - Kind: SSH Username with private key
@@ -207,3 +209,8 @@ pipeline {
 - Navigate to the browser and hit the endpoint: `http://appserver-ip-address:5000`
 
 - As the application is listening on port 5000, you should see the application landing page
+
+## Recommended Enhancements
+
+- You may add an additional stage for performing static code analysis using tools like sonarqube.
+- You may push the build artifact (package) in artifactory tools like nexus or JFrog followed by app deployment.
