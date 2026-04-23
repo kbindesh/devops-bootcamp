@@ -83,6 +83,7 @@ CMD ["src/app.py"]
 - Kubernetes CLI Plugin
 - Kubernetes Credentials
 - Pipeline: Stage view
+- Pipeline: AWS Steps - required for withAWS DSL
 
 ### Create Jenkins Credentials
 
@@ -98,8 +99,9 @@ CMD ["src/app.py"]
 
 - **Create a Jenkins credentials to save the generated `GitHub PAT`**:
   - Domain: global
-  - Kind: Secret text
-  - Secret: `your-github-pat`
+  - Kind: Username and Password
+  - Username: `your-github-username`
+  - Password: `your-github-pat`
   - ID: github-creds
   - Description: GitHub Credentials
 
