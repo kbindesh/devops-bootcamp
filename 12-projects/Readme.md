@@ -1,0 +1,5 @@
+- Based on Git and GitHub
+- Terraform
+- CD Pipeline for deploying Maven App on Vm
+- Docker CI Pipeline
+- Kubernetes CD Pipeline
