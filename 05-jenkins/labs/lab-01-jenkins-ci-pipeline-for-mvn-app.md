@@ -1,12 +1,14 @@
 # `Practice Lab-01` - Create a Jenkins based CI pipeline for building a Maven Application
 
-- In this lab, you will learn how to configure and automatically build Maven application on Jenkins server.
+- In this lab, you will learn how to configure a Jenkins based Continuous Integration (CI) pipeline for Maven application.
+
 - Following topics are covered:
-  - Develop a sample Maven App
+  - Develop a sample Maven Application
   - Check-in the Maven App source code into GitHub
   - Configure Jenkins server for building Maven App
   - Create a GitHub Webhook for Jenkins server
   - Create & run a Jenkins Maven Job
+  - Verify the Application Build
 
 ## Prerequisites
 
