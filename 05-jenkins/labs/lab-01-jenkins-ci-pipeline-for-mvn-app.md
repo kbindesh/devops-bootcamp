@@ -1,6 +1,6 @@
 # `Practice Lab-01` - Create a Jenkins based CI pipeline for building a Maven Application
 
-- In this lab, you will learn how to configure a Jenkins based Continuous Integration (CI) pipeline for Maven application.
+- In this lab, you will learn how to setup a Jenkins based Continuous Integration (CI) pipeline for Maven application.
 
 - Following topics are covered:
   - Develop a sample Maven Application
@@ -247,6 +247,8 @@ sudo yum install -y git
 ```
 
 ## Step-06: Create a `GitHub Webhook` for Maven Jenkins job
+
+- To create a GitHub webhook, kindly refer to [Configuring GitHub WebHook Trigger](../5.04-github-webhook-trigger.md)
 
 ## Step-07: Save the required `tools location` on Jenkins - Java, Maven and Git
 
