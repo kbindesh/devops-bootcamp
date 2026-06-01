@@ -83,3 +83,23 @@ Dave, a senior cloud engineer, is leaving CloudCorp to join a new company. He ha
     C) Delete or deactivate Dave's IAM User, deactivate his access keys, and remove him from all IAM groups.
 
     D) Delete the entire AWS Root account to ensure Dave cannot log in.
+
+<hr>
+
+## Quiz Answer Key & Explanations
+
+1. B — `AmazonS3ReadOnlyAccess` perfectly matches the business requirement of listing/viewing
+   files without allowing deletion. Sharing credentials or using the Root account breaks security
+   fundamentals.
+
+2. C — Using an IAM Group is the standard best practice for managing identical permissions for
+   multiple users. Sharing accounts (Option B) destroys accountability, and configuring users individually (Option A) does not scale.
+
+3. C — In AWS evaluation logic, `an explicit Deny always wins`. Even if Bob belongs to ten groups
+   that "Allow" EC2, his individual "Deny" completely blocks him.
+
+4. B — AWS IAM requires explicit resource matching. Because the policy only targets the company-marketing resource, Charlie has no default permission (Implicit Deny) for company-financials . Note: 2012-10-17 is the current standard version string for IAM, not an
+   expiration date.
+
+5. C — Deactivating or deleting the user account and revoking programmatic access keys ensures
+   that stale credentials cannot be compromised later.
