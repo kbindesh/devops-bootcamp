@@ -1,4 +1,4 @@
-# `Practice Lab-01` - Create a Jenkins based CI pipeline for building a Maven Application
+# `Practice Lab-01` - Create a Jenkins based CI pipeline for building a Maven Application (Maven Project)
 
 - In this lab, you will learn how to setup a Jenkins based Continuous Integration (CI) pipeline for Maven application.
 

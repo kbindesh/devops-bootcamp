@@ -1,4 +1,4 @@
-# `Practice Lab-02` - Create a Jenkins based Continuous Delivery (CD) pipeline for building and deploying a Maven App on EC2 Instance
+# Hands-on Lab: Create a Jenkins based Continuous Delivery (CD) pipeline for building and deploying a Maven App on EC2 Instance
 
 - In this lab, you will setup a Jenkins based Continuous Delivery (CD) pipeline for Maven application.
 
