@@ -35,7 +35,7 @@ In this lab, you will setup a Jenkins based Continuous Integration (CD) pipeline
   - ID: sonarqube-auth-token
 - Click on **Create** button
 
-## Step-04: Install SonarScanner Jenkins Plugin
+## Step-04: Install Jenkins Plugin for SonarQube
 
 - Jenkins Dashboard >> **Manage Jenkins** >> **Plugins**
 - Select Available plugins tab >> serach for **SonarQube scanner** >> Select and Install
@@ -185,3 +185,98 @@ git push -u origin main
   - Branch: main
 
 ## Step-11: Trigger the Jenkins Job and Verify the code review results
+
+```groovy
+
+pipeline {
+    agent any
+
+    environment {
+        // --- Tool Name Constants ---
+        MAVEN_TOOL       = 'Maven-3.9'
+        JDK_TOOL         = 'Java-17'
+        SONAR_TOOL       = 'Sonar-Scanner'
+
+        // --- SonarQube Server Configurations ---
+        SONAR_SERVER_ENV = 'SonarCloud'
+        SONAR_CRED_ID    = 'sonarcloud-token-id' // Jenkins Credential ID for your Secret Text
+
+        // --- SonarQube Project Configurations ---
+        SONAR_ORG        = 'your-sonarcloud-organization-key'
+        SONAR_PROJECT    = 'your-unique-project-key'
+
+        // --- Project Path Configurations ---
+        SRC_DIR          = 'src/main/java'
+        TEST_DIR         = 'src/test/java'
+        BIN_DIR          = 'target/classes'
+        JACOCO_REPORTS   = 'target/site/jacoco/jacoco.xml'
+
+        // --- Timeout Configurations ---
+        QG_TIMEOUT_MINS  = '10'
+    }
+
+    tools {
+        // Tools are dynamically resolved using the environment variables
+        maven "${env.MAVEN_TOOL}"
+        jdk   "${env.JDK_TOOL}"
+        sonarScanner "${env.SONAR_TOOL}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh 'mvn clean verify -DskipTests=false'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            environment {
+                // Securely binds the Jenkins secret text token to an environment variable
+                SONAR_TOKEN = credentials("${env.SONAR_CRED_ID}")
+            }
+            steps {
+                // Injects the global server profile configuration
+                withSonarQubeEnv("${env.SONAR_SERVER_ENV}") {
+                    sh """
+                        sonar-scanner \
+                        -Dsonar.token=${SONAR_TOKEN} \
+                        -Dsonar.organization=${env.SONAR_ORG} \
+                        -Dsonar.projectKey=${env.SONAR_PROJECT} \
+                        -Dsonar.sources=${env.SRC_DIR} \
+                        -Dsonar.tests=${env.TEST_DIR} \
+                        -Dsonar.java.binaries=${env.BIN_DIR} \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=${env.JACOCO_REPORTS}
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            options {
+                // Timeout duration is dynamically cast to an integer
+                timeout(time: env.QG_TIMEOUT_MINS.toInteger(), unit: 'MINUTES')
+            }
+            steps {
+                script {
+                    def qg = waitForQualityGate()
+                    if (qg.status != 'OK') {
+                        error "Pipeline aborted due to Quality Gate failure: ${qg.status}"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+```
