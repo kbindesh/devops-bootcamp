@@ -81,7 +81,25 @@
      </project>
      ```
 
-### Step-2.4: Compile Unit test and Package the Application
+### Step-2.4: Update the `pom.xml` file for setting custom name to artifact
+
+- To give a custom name to a JAR file while building a Maven project, use the `<finalName>` tag inside the `<build>` section of your _pom.xml_ file.
+- By default, Apache Maven names the generated JAR file following the standard convention of `${artifactId}-${version}.jar`.
+- Defining the `<finalName>` property overrides this default behavior.
+
+- To set a static custom name, add the <finalName> property directly under the <build> tag:
+
+```xml
+<project>
+    ...
+    <build>
+        <!-- The custom name of your generated JAR file -->
+        <finalName>app</finalName>
+    </build>
+</project>
+```
+
+### Step-2.5: Compile Unit test and Package the Application
 
 - Maven operates on a sequential build lifecycle where executing a later phase automatically runs all preceding phases.
 
@@ -93,15 +111,15 @@
 
 - On successful execution of the above command, a new directory i.e. **target** will be automatically created in the root of the maven project which will generate compiled version of the program (.class) and the build artifact (.jar)
 
-### Step-2.5: Running the packaged app (.jar file) locally to verify
+### Step-2.6: Running the packaged app (.jar file) locally to verify
 
 - Open the VS Code integrated terminal (Ctrl + \`` or Cmd + ``) and execute the standard Java archive command:
 
 ```
-java -jar target/demo-1.0-SNAPSHOT.jar
+java -jar target/app.jar
 ```
 
-### Step-2.6: Create a `.gitignore` file to ignore _target_ directory
+### Step-2.7: Create a `.gitignore` file to ignore _target_ directory
 
 - In the root directory of your Maven project, create a plaintext file named exactly **.gitignore**.
 - Make sure it has no .txt extension.

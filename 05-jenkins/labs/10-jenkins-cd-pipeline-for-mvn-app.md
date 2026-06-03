@@ -99,16 +99,13 @@ WantedBy=multi-user.target
 1. **Pipeline: Stage View Plugin**
    - **Purpose**: Visualizes each stage (Build, SonarQube Analysis, Deploy) on your Jenkins dashboard dashboard, making it easy to track build progress and trace failures.
 2. **SonarQube Scanner for Jenkins**
-   - **Purpose**: Provides the withSonarQubeEnv wrapper and the waitForQualityGate step. It allows Jenkins to communicate with your SonarQube server and pause the build until the quality check finishes.
+   - **Purpose**: Provides the withSonarQubeEnv wrapper and the `waitForQualityGate` step. It allows Jenkins to communicate with your SonarQube server and pause the build until the quality check finishes.
 3. **SSH Agent Plugin**
-   - **Purpose**: Provides the sshagent block wrapper. This safely loads your EC2 private key credentials into memory so scp and ssh commands can run without exposing keys on the disk.
+   - **Purpose**: Provides the sshagent block wrapper. This safely loads your EC2 private key credentials into memory so scp and ssh commands can run without exposing keys on the disk. Also, to use the `sshagent` block in a _Jenkinsfile_.
 4. **Pipeline: Maven Integration Plugin**
    - **Purpose**: Adds native support for the tools { maven '...' } block. This automates the downloading, path configurations, and provisioning of specific Maven installations directly inside the script pipeline.
 5. **Credentials Binding Plugin**
    - **Purpose**: Provides the `withCredentials` step syntax. This safely injects hidden secrets (like your sonar-token) as masked environment variables into individual shell script scopes.
-
-6. **SSH Agent Plugin**
-   - **Purpose**: To use the `sshagent` block in a Jenkinsfile.
 
 ### Configure Tools
 
