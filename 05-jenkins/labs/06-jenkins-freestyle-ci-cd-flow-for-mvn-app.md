@@ -1,4 +1,4 @@
-# Configure Jenkins Server for building Maven Applications
+# Hands-on Lab: Configure Jenkins Server for building Maven Applications
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@
   - _GitHub_
   - _SSH Agent Plugin_
 
-### 1.2: Generate GitHub Credential (PAT) and Configure it on Jenkins
+### 1.2: Integrate GitHub with Jenkins | Generate GitHub Credential (PAT) and Configure it on Jenkins
 
 - **Generate GitHub Personal Access Token (PAT) for Jenkins**
   - Sign in to your GitHub account.

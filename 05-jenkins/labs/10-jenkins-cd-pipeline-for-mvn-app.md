@@ -1,6 +1,37 @@
 # Hands-on Lab: Create a Jenkins based Continuous Delivery (CD) pipeline for building and deploying a Maven App on EC2 Instance
 
 - In this lab, you will setup a Jenkins based Continuous Delivery (CD) pipeline for Maven application.
+- A production-grade Jenkins pipeline is written as Pipeline as Code via a Jenkinsfile and strictly separated from configuration data.
+
+> [!IMPORTANT]
+> Jenkins Pipeline must be resilient, modular, secure, and clear, leveraging native declarative directives rather than custom scripting blocks.
+
+This Jenkins CD pipeline splits the workflow into distinct, sequential, and parallel blocks to enforce a "fail-fast" paradigm:
+
+1. **Initialize**
+   - Validates environment paths, tools, and pulls environment metadata.
+     </br>&darr;
+
+- **Compile & Test**
+  - Builds the Maven binaries and runs Unit/Integration tests.
+    </br>&darr;
+- **Static Code Analysis (Linting/SCA)**
+  - Scans source code for quality gates, security vulnerabilities (e.g., SonarQube), and credential leaks before compilation.
+    </br>&darr;
+- **Security Scanning (Dependency Check)**
+  - Audits open-source software (OSS) dependencies for known CVE vulnerabilities.
+    </br>&darr;
+- **Publish Artifact**
+  - Pushes the tested, immutable package (e.g., .jar, .war, or Docker image) to a private repository (Nexus or JFrog Artifactory).
+    </br>&darr;
+- **Deploy to Staging Environment**
+  - Deploys the package to a pre-production/staging environment automatically.
+    </br>&darr;
+- **Automated Smoke Test**
+  - Runs a quick test suite against the live staging environment to verify stability.
+    </br>&darr;
+- **Promote to Production**
+  - A gated, time-bound stage requiring authorized human intervention before releasing live.
 
 ## Prerequisites
 

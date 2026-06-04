@@ -1,4 +1,4 @@
-# Configure local system for pushing the Application Code to GitHub securely
+# Hands-on Lab: Configure local system for pushing the Application Code to GitHub securely
 
 - Official Documentation: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
 
