@@ -170,9 +170,178 @@ cat ~/.ssh/jenkins_key
 
 ## Step-XX: Create a `Jenkinsfile`
 
-## Step-XX: Update the pom.xml file
+- For many interpreted languages (like JavaScript or Python), we run static code analysis directly on raw source code files. However, Java is a compiled language, and **SonarQube** explicitly requires compiled bytecode (.class files) to perform accurate analysis.
 
-## Step-XX: Create a GitHub Webhook for Jenkins
+> [!IMPORTANT]
+> Initialize Pipeline &rarr; Compile & Unit Test &rarr; Security & Quality Analysis &rarr; Publish Artifact &rarr; Deploy to Staging &rarr; Smoke Test &rarr; Production Gate &rarr; Deploy to Production
+
+- Lets, create a production-grade pipeline:
+
+```groovy
+pipeline {
+    agent any
+
+    options {
+        timeout(time: 2, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        disableConcurrentBuilds()
+        skipStagesAfterUnstable()
+    }
+
+    tools {
+        // Names must exactly match your 'Manage Jenkins' -> 'Tools' definitions
+        maven 'maven-3.9.15'
+        jdk   'java-21'
+        sonarScanner 'sonar-scanner'
+    }
+
+    environment {
+        APP_NAME         = 'maven-enterprise-app'   // SQ Project Key
+        SQ_ORG_NAME      = 'bin-org'
+        NEXUS_REPO_URL   = 'https://company.com'
+        SONARQUBE_SERVER = 'sonarqube-server' // Matches the name defined under Jenkins System Configuration
+        STAGING_SERVER   = '10.0.12.45'
+        PROD_SERVER      = '10.0.14.90'
+
+        SONAR_TOKEN      = credentials('sonar-server-token')
+        SSH_DEPLOY_KEY   = credentials('ssh-prod-deploy-key')
+        PROD_DEPLOY_APPROVERS = 'jenkinsadmin' // Jenkins usernames
+    }
+
+    stages {
+        // Verifies environment readiness, prints tool versions and logs build metadata for audit trails.
+        stage('Initialize') {
+            steps {
+                echo "Starting build sequence for ${env.APP_NAME} - Build Number: ${env.BUILD_NUMBER}"
+                sh 'mvn --version'
+            }
+        }
+
+        // Compiles Java source files into bytecode and runs unit tests.
+        stage('Compile & Unit Test') {
+            steps {
+                echo 'Compiling code and generating test coverage reports...'
+                // Generates target/classes and target/surefire-reports
+                sh 'mvn clean test'
+            }
+            post {
+                success {
+                    // Publishes test results immediately to the Jenkins UI dashboard
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        // Runs code quality scans and open-source dependency auditing simultaneously to minimize total pipeline execution time.
+        stage('Security & Quality Analysis') {
+            parallel {
+                stage('SonarQube Analysis') {
+                    steps {
+                        withSonarQubeEnv("${env.SONARQUBE_SERVER}") {
+                            sh "mvn sonar:sonar -Dsonar.projectKey=${env.APP_NAME} -Dsonar.login=${SONAR_TOKEN}" -Dsonar.organization=${env.SQ_ORG_NAME}
+                        }
+                    }
+                }
+                stage('OWASP Dependency Check') {
+                    steps {
+                        echo 'Scanning open-source dependencies for known CVE flaws...'
+                        sh 'mvn dependency-check:check'
+                    }
+                }
+            }
+        }
+
+        // This stage verifies if the SonarQube analysis passed the Quality Gate thresholds
+        // Pauses the pipeline to wait for SonarQube server analysis results.
+        // Fails the build automatically if quality thresholds (bugs, coverage) are missed.
+        stage('SonarQube Quality Gate') {
+            steps {
+                echo 'Checking SonarQube Quality Gate status...'
+                // Explicitly wrap only the listener step in a clear timeout block
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to SonarQube Quality Gate Failure. Status: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
+
+        // Packages verified bytecode into a final deployable artifact (.war/.jar) and uploads it securely to the Nexus repository.
+
+        stage('Package & Publish') {
+            steps {
+                echo "Packaging final artifact and publishing to ${env.NEXUS_REPO_URL}"
+                // Reuses compiled classes to build the final deployable artifact safely
+                withCredentials([usernamePassword(credentialsId: 'nexus-deployer-account', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh "mvn deploy -DaltDeploymentRepository=nexus::default::${env.NEXUS_REPO_URL} -Dusername=${NEXUS_USER} -Dpassword=${NEXUS_PASS} -DskipTests=true"
+                }
+            }
+        }
+
+        // Copies the newly published artifact onto the staging application server using secure shell authentication.
+
+        stage('Deploy to Staging') {
+            steps {
+                echo "Deploying out to Staging Node: ${env.STAGING_SERVER}"
+                sh "scp -i ${SSH_DEPLOY_KEY} target/*.war ubuntu@${env.STAGING_SERVER}:/opt/tomcat/webapps/"
+            }
+        }
+
+        // Runs basic live endpoint checks against the staging deployment to confirm the application started up successfully without runtime crashes.
+
+        stage('Smoke Test') {
+            steps {
+                echo 'Validating environment health check endpoints...'
+                sh "curl --fail http://${env.STAGING_SERVER}:8080/${env.APP_NAME}/health || exit 1"
+            }
+        }
+
+        // Enforces a manual approval step for authorized users before production release.
+        // Includes a 1-day timeout to prevent idle builds from tying up pipeline queues indefinitely.
+
+        stage('Gate to Production') {
+            steps {
+                timeout(time: 1, unit: 'DAYS') {
+                    input message: "Approve deployment of version ${env.BUILD_NUMBER} directly to Production?",
+                          submitter: "${env.PROD_DEPLOY_APPROVERS}"
+                }
+            }
+        }
+
+        // Executes the final code release to the production live system cluster after passing all automated and human quality gates.
+
+        stage('Deploy to Production') {
+            steps {
+                echo "Executing release pipeline on production node: ${env.PROD_SERVER}"
+                sh "scp -i ${SSH_DEPLOY_KEY} target/*.war ubuntu@${env.PROD_SERVER}:/opt/tomcat/webapps/"
+            }
+        }
+    }
+
+
+    post {
+        always {
+            echo 'Executing workspace cleanup...'
+            cleanWs()
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed at build number ${env.BUILD_NUMBER}."
+        }
+    }
+}
+```
+
+## Step-XX: Update the `pom.xml` file
+
+- include mainClass block
+- Java version
+- include Binary Name
 
 ## Step-XX: Push the changes to GitHub
 
