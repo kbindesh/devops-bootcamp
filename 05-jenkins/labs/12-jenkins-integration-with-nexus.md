@@ -1,12 +1,16 @@
 # Hands-on Lab: Integrate Sonatype Nexus with Jenkins for Artifact Management
 
+This project implements an automated, secure CI/CD pipeline using Jenkins and Maven to build, verify, and deploy Java application artifacts into a Sonatype Nexus Repository.
+
+`[GitHub Repo] ──(Webhook / Build)──> [Jenkins Pipeline] ──(Secure Build & Auth)──> [Nexus Repository]`
+
 ## Prerequisites
 
 - Complete Jenkins CI Labs - part1, part2, and part3
 
 ## Step-01: Setting-up Sonatype Nexus Server (on Amazon Linux 2023)
 
-### Create an EC2 Instance
+### 1.1: Create an EC2 Instance
 
 - Sign-in to AWS Account (https://console.aws.amazon.com/).
 - Navigate to EC2 service >> **Launch Instance**.
@@ -22,7 +26,7 @@
 - **Storage**: 15 GB, GP2 (min for this lab)
 - Click on **Launch Instance** button
 
-### Download and Extract Nexus
+### 1.2: Download and Extract Nexus
 
 - Install Java
 
@@ -50,7 +54,7 @@ sudo tar -xvf nexus-3.93.0-06-linux-x86_64.tar.gz
 sudo mv nexus-3.93.0-06 nexus
 ```
 
-### Create and configure a dedicated System user for Nexus
+### 1.3: Create and configure a dedicated System user for Nexus
 
 - For system security, running applications like _Nexus_ under root privileges is not advised.
 - Runs the Nexus Java process on the server.
@@ -76,7 +80,7 @@ sudo vi /opt/nexus/bin/nexus.rc
 run_as_user="nexus"
 ```
 
-### Configure Nexus as a Systemd Service
+### 1.4: Configure Nexus as a Systemd Service
 
 - Create a systemd startup script so you can manage the Nexus lifecycle:
 
@@ -108,7 +112,7 @@ sudo systemctl enable nexus
 sudo systemctl restart nexus
 ```
 
-### Access the Nexus UI and Retrieve Admin Password
+## Step-02: Access the Nexus UI and Retrieve Admin Password
 
 - The preceding commands will start the nexus service on port 8081.
 - To access the nexus dashboard, visit:
@@ -127,22 +131,21 @@ http://nexus-server-public-ip-or-dns:8081
 
 - Now, you should land on your personalize Nexus Dashboard page.
 
-### Create and configure a local Nexus User for Jenkins integration
+## Step-03: Create and configure a local Nexus User for Jenkins integration
 
-#### Create a Role in Nexus
+### 3.1: Create a Role in Nexus
 
 - This step defines what Jenkins is allowed to do in Nexus (add and edit artifacts in your Maven repositories).
 
-- Log into your Nexus 3 dashboard as an admin.
-- Click the Administration cog icon (top menu bar).
-- Navigate to Security > Roles in the left sidebar.
-- Click Create role and select Nexus role.
+- Sign-in through Nexus Dashboard as an admin &rarr; Settings &rarr; Security &rarr; **Roles**.
+- Click Create role &rarr; select **Nexus role**.
 - Fill out the following details:
   1. **Role ID**: `jenkins-deployer`
   2. **Name**: Jenkins Deployer Role
   3. **Description**: Allows Jenkins to upload Maven artifacts
+     ![create-nexus-role](../images/create-nexus-role.png)
 
-- In the Privileges section, use the filter box to find and add these exact permissions:
+- In the **Privileges section**, click on Modify Applied Privileges button &rarr; use the filter box to find and add following permissions:
   - nx-repository-view-maven2-\*-add (Allows uploading new artifacts)
   - nx-repository-view-maven2-\*-edit (Allows overwriting or updating snapshots)
   - nx-repository-view-maven2-\*-read (Allows Jenkins to view existing components)
@@ -150,11 +153,11 @@ http://nexus-server-public-ip-or-dns:8081
 
 - Click **Create role**
 
-#### Create a local User Account in Nexus and assign Role
+### 3.2: Create a local User Account in Nexus and assign Role
 
-- This step creates the actual credentials Jenkins will use to log in to Nexus.
-- In the left sidebar, navigate to Security > Users.
-- Click Create local user.
+- This step creates the actual credentials that Jenkins will use to log in to Nexus.
+
+- In the left sidebar, navigate to **Security** &rarr; **Users** &rarr; Click **Create local user** button.
 - Fill out the user profile details:
   - ID: `jenkins-svc` (this will be the username in Jenkins)
   - First Name: Jenkins
@@ -162,11 +165,11 @@ http://nexus-server-public-ip-or-dns:8081
   - Email: jenkins@yourcompany.com
   - Status: Set to Active
   - Password: Enter a strong, unique password
-- Scroll down to the **Roles** section &rarr; find `jenkins-deployer` under **Given** or **Available roles** and move it to the **Given** side.
+  - **Roles** section &rarr; find `Jenkins Deployer Role` under **Available roles** and move it to the **Granted** side.
 
 - Click **Create local user**.
 
-#### Save the Nexus User details to Jenkins
+## Step-04: Save Nexus login Credentials to Jenkins
 
 - Now that the account exists in Nexus, securely store it inside Jenkins so your pipelines can access it.
 
@@ -178,124 +181,161 @@ http://nexus-server-public-ip-or-dns:8081
   - **Scope**: Global
   - **Username**: `jenkins-svc` (The exact Nexus User ID you created)
   - **Password**: (The password you set for jenkins-svc)
-  - **ID**: `nexus-credentials-id` (Use this exact string in your pipeline script)
-  - **Description**: Nexus 3 deployment service account
+  - **ID**: `nexus-deploy-creds` (Use this exact string in your pipeline script)
+  - **Description**: Nexus deployment service account
 - Click **Create**
 
-## Step-02: Integrate Nexus with Jenkins Pipeline
+## Step-05: Install required Jenkins Plugins
 
-### Install Plugins in Jenkins
+- **Pipeline Maven Integration** (for withMaven DSL)
+- **Config File Provider** (for Maven setting.xml)
 
-- Jenkins Dashboard &rarr; **Manage Jenkins** &rarr; Plugins &rarr; Available Plugins. Search the following plugins and install
-  1. _Sonatype Platform Plugin_
-  2. _Pipeline Utility Steps Plugin_ (it provides the _readMavenPom_ step)
+## Step-06: Create a Managed settings.xml
 
-### Save the Nexus Server connectivity details under Jenkins System Configurations
+- Instead of keeping configuration files in your repository, store your repository configuration inside Jenkins.
 
-- Navigate to Manage Jenkins → System.
-- Scroll down to find the **Sonatype Nexus configuration** block.
-- Click **Add Nexus Repository Server** and select **Nexus Repository Server**.
-- Fill in the parameters exactly as follows:
-  - Display Name: Nexus Production Server
-  - Server ID: `nexus-production` (Take note of this; it must match the ID in your Jenkinsfile)
-  - Server URL: http://<YOUR_NEXUS_SERVER_IP_OR_DNS>:8081
-  - Credentials: `nexus-credentials-id`
-- Click **Test Connection** to ensure Jenkins can reach your server &rarr; Click **Save** button.
+- Go to Dashboard &rarr; Manage Jenkins &rarr; Managed files (requires the Config File Provider plugin).
+- Click **Add a new Config** and select **Maven settings.xml**.
+- ID: nexus-maven-settings
+- In the XML content, configure the `<servers>` block. Ensure the <id> string matches what you will use in your pipeline:
 
-### Update the Jenkins Pipeline Script (Jenkinsfile) for Uploading artifacts to Nexus
+```bash
+<settings>
+    <servers>
+        <server>
+            <id>nexus-releases</id>
+            <username>${nexus.username}</username>
+            <password>${nexus.password}</password>
+        </server>
+        <server>
+            <id>nexus-snapshots</id>
+            <username>${nexus.username}</username>
+            <password>${nexus.password}</password>
+        </server>
+    </servers>
+</settings>
+```
 
-- This declarative pipeline uses java21 to build a Maven application.
-- It incorporates the _Pipeline Utility Steps Plugin_ to automatically read your project's **groupId**, **artifactId**, and **version** directly from your pom.xml file.
-- It dynamically parses the project information via _readMavenPom_, and publishes the final .jar artifact to Nexus using the _nexusPublisher_ step.
+## Step-07: Update the Jenkins Pipeline Script (Jenkinsfile) for uploading artifacts to Nexus
+
+- This declarative pipeline uses java-21 to build a Maven application.
 
 ```groovy
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'NEXUS_IP',
+            defaultValue: '52.91.97.106',
+            description: 'The IP address or hostname of the Nexus server'
+        )
+    }
+
     tools {
-        // must match your Java 21 tool configuration name in "Tools" section
-        jdk 'java-21'
+        maven 'maven-3.9.16'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Build & Deploy to Nexus') {
             steps {
-                // Pull source from your repository control system
-                git branch: 'main', url: 'https://github.com'
-            }
-        }
+                // Link your Jenkins managed settings file here
+                withMaven(mavenSettingsConfig: 'nexus-maven-settings') {
 
-        stage('Build & Test') {
-            steps {
-                // Clean package compiling via Java 21 framework
-                sh 'mvn clean package -DskipTests'
-            }
-        }
+                    // Bind your Jenkins credentials to variables that Maven reads
+                    withCredentials([usernamePassword(credentialsId: 'new-nexus-creds', passwordVariable: 'nexus.password',
+usernameVariable: 'nexus.username')]) {
 
-        stage('Read POM File & Build') {
-            steps {
-                script {
-                    // Read Maven metadata using the Pipeline Utility Steps Plugin
-                    def pom = readMavenPom file: 'pom.xml'
-
-                    // Assign pom properties to environment variables for cross-stage access
-                    env.POM_GROUP_ID   = pom.groupId ?: pom.parent.groupId // Fallback to parent groupId if missing
-                    env.POM_ARTIFACT   = pom.artifactId
-                    env.POM_VERSION    = pom.version
-
-                    echo "Successfully parsed POM data:"
-                    echo "Group ID: ${env.POM_GROUP_ID}"
-                    echo "Artifact ID: ${env.POM_ARTIFACT}"
-                    echo "Version: ${env.POM_VERSION}"
-                }
-
-                // Compile the Java app into a .jar file
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Upload to Nexus 3') {
-            steps {
-                script {
-                    // Dynamically toggle repository destination based on version suffix
-                    def targetRepo = env.POM_VERSION.endsWith("-SNAPSHOT") ? 'maven-snapshots' : 'maven-releases'
-                    echo "Target Repository selected: ${targetRepo}"
-
-                    // Execute upload using Sonatype Platform Plugin step
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        nexusInstanceId: "${env.NEXUS_INSTANCE_ID}",
-                        repository: targetRepo,
-                        artifacts: [
-                            [
-                                artifactId: "${env.POM_ARTIFACT}",
-                                groupId: "${env.POM_GROUP_ID}",
-                                version: "${env.POM_VERSION}",
-                                type: 'jar',
-                                classifier: '',
-                                // Dynamically targets the generated JAR file in the target folder
-                                file: "target/${env.POM_ARTIFACT}-${env.POM_VERSION}.jar"
-                            ]
-                        ]
-                    )
+                        // Use your dynamic alternate repositories for deployment
+                        sh """
+                            mvn clean deploy \\
+                            -DaltReleaseDeploymentRepository=nexus-releases::default::http://${params.NEXUS_IP}:8081/repository/maven-releases/ \\
+                            -DaltSnapshotDeploymentRepository=nexus-snapshots::default::http://${params.NEXUS_IP}:8081/repository/maven-snapshots/
+                        """
+                    }
                 }
             }
         }
     }
-
     post {
         success {
-            echo "Successfully pushed ${env.POM_ARTIFACT}-${env.POM_VERSION}.jar to Nexus!"
+            echo 'CI Pipeline completed successfully! Code is compiled, tested, packaged and shipped to nexus.'
         }
         failure {
-            echo 'Pipeline deployment failed. Check Nexus permissions or network connectivity.'
+            echo 'CI Pipeline execution failed. Please check build console logs for more details.'
         }
     }
 }
 ```
 
-## Step-03: Push the changes to GitHub (SCM)
+## Step-08: Push the changes to GitHub (SCM)
 
-## Step-04: Create a Jenkins Job (pipeline)
+```
+git add Jenkinsfile
 
-## Step-05: Verify the results | Pipeline | Artifacts on Nexus
+git commit -m "Update Jenkinsfile for Nexus"
+
+git push -u origin main
+```
+
+## Step-09: Create a Jenkins Job (pipeline)
+
+- Open your Jenkins dashboard &rarr; **New Item**.
+  - **Name**: `maven-nexus-pipeline`
+  - **Job type**: Pipeline
+  - **Definition**: Pipeline script from SCM
+    - **SCM**: Git
+    - **Repository URL**: Enter your GitHub repo link (e.g., https://github.com)
+    - **Credentials**: If your repository is private, select your GitHub access credentials from the dropdown list.
+    - **Branches to build**: main
+    - **Script Path**: Verify this is set to Jenkinsfile
+- Click **Save**
+
+## Step-10: Verify the results | Pipeline | Artifacts on Nexus
+
+- Select the above created Jenkins job and click **Build now** button to trigger it manually.
+
+- Jenkins will first download your Jenkinsfile from GitHub, parse the execution steps, check out your complete project files into the workspace, and run the Maven build to deploy straight to Nexus.
+
+- Verify the Jenkins Build status.
+- Then, switch to the Nexus Dashboard and verify if the Nexus has received the build artifacts in maven-snapshots repository.
+
+## Suggestions
+
+### Define Nexus server details in your pom.xml
+
+- Add a <distributionManagement> block inside your project's pom.xml file so Maven natively knows where to send the artifacts:
+
+```xml
+<distributionManagement>
+    <repository>
+        <id>nexus-releases</id>
+        <url>http://<your-nexus-url>:8081/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <url>http://<your-nexus-url>:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
+```
+
+### Skip Test Compilation completely
+
+- This completely prevents Maven from compiling or touching your test source directories:
+
+```
+mvn deploy -Dmaven.test.skip=true ...
+```
+
+- Deploy pre-compiled artifacts directly (Advanced)
+
+```
+mvn deploy:deploy-file \
+  -Dfile=target/my-app-1.0.jar \
+  -DgroupId=com.company \
+  -DartifactId=my-app \
+  -Dversion=1.0 \
+  -Dpackaging=jar \
+  -DrepositoryId=nexus-releases \
+  -Durl=http://your-nexus-ip:8081/repository/maven-releases/
+```

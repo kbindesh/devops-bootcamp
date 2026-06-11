@@ -10,15 +10,16 @@
 
 ## Step 1: Add Credentials to Jenkins
 
-- StoreTo avoid hardcoding sensitive passwords into your source control, save your SMTP keys in the Jenkins Credentials Store (Manage Jenkins \(\rightarrow \) Credentials):
+- Save your SMTP keys in the Jenkins Credentials Store. Manage Jenkins &rarr; Credentials:
 
-1. Testing Account: Create a Username with password block with the ID mailtrap-smtp-creds (use your Mailtrap Inbox SMTP credentials).
+1. **Testing Account**: Create a Username with password block with the ID mailtrap-smtp-creds (use your Mailtrap Inbox SMTP credentials).
 
-2. Production Account: Create a Username with password block with the ID aws-ses-smtp-creds (use your AWS SES SMTP credentials).
+2. **Production Account**: Create a Username with password block with the ID aws-ses-smtp-creds (use your AWS SES SMTP credentials).
 
 ## Step 2: Complete Environment-Isolated Jenkinsfile
 
-- Here is your complete, production-ready Jenkinsfile. It uses a runtime parameter (ENV_PROFILE) to determine which SMTP server configurations to bind during execution.
+- Here is your complete, production-ready Jenkinsfile.
+- It uses a runtime parameter (ENV_PROFILE) to determine which SMTP server configurations to bind during execution.
 
 ```groovy
 pipeline {
@@ -39,8 +40,8 @@ pipeline {
     }
 
     tools {
-        maven 'Maven_3.9.x'
-        jdk   'Java_17'
+        maven 'maven-3.9.16'
+        jdk   'java-21'
     }
 
     environment {

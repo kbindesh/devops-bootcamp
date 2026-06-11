@@ -1,4 +1,12 @@
-# Integrating SonarQube with Jenkins for Static Code Analysis
+# Hands-on Lab: Integrating SonarQube with Jenkins for Static Code Analysis
+
+- This project establishes an automated Continuous Inspection workflow by integrating SonarQube into a Jenkins CI pipeline.
+- It automatically triggers static code analysis on every code commit to identify the following early in the development lifecycle:
+  - bugs
+  - vulnerabilities
+  - code smells
+
+`[Developer Commit] ──> [Jenkins Pipeline] ──> [SonarQube Scanner] ──> [Quality Gate Pass/Fail]`
 
 ## Prerequisites
 
@@ -9,7 +17,7 @@
 - GitHub Account
 - GitHub Repository with a Maven App source code
 
-## Step-XX: Setting-up SonarQube Cloud Server
+## Step-01: Setting-up SonarQube Cloud Server
 
 ### Setup SonarQube Cloud Account
 
@@ -34,7 +42,7 @@
   - Project Key: <leave_it_to_default>
   - Project visibility: Private
 
-## Generate a SonarQube Cloud Authentication token
+## Step-02: Generate a SonarQube Cloud Authentication token
 
 - Sign-in to your SonarCloud account >> Click on your user drop-down list (top-right corner) >> **My Account**
 - Select **Security** tab
@@ -43,7 +51,7 @@
     - Click on **Generate Token** button.
   - Copy the generated token and store at safe place as we'll need it in our next step.
 
-## Save SonarQube authentication token on Jenkins server
+## Step-03: Save SonarQube authentication token on Jenkins server
 
 - Navigate to Jenkins Dashboard >> Manage Jenkins >> Credentials >> System >> Global credentials (unrestricted)
 - Click on New Credentials button
@@ -53,7 +61,7 @@
   - ID: sonarqube-auth-token
 - Click on **Create** button
 
-## Configure Jenkins Server for SonarQube integration
+## Step-04: Configure Jenkins Server for SonarQube integration
 
 ### Install Jenkins Plugin
 
@@ -103,10 +111,67 @@
   - **Install automatically**: Uncheck this box.
   - **SONAR_RUNNER_HOME**: /opt/sonar-scanner (enter exact absolute path where you installed it)
 
-## Update the `Jenkinsfile` and Check-in the changes to GitHub
+## Step-05: Update the `Jenkinsfile` and Check-in the changes to GitHub
 
-## Create a Jenkins Pipeline (job)
+- Update the Jenkinsfile by adding a dedicated stage for code review using SonarQube:
 
-## Trigger the Pipeline
+```groovy
+pipeline {
+   agent any
 
-## Verify the code review results in SonarQube
+   tools {
+      maven 'maven-3.9.16'
+   }
+
+   stages {
+    stage('Verify Maven Application') {
+      steps {
+        sh 'mvn clean verify'
+      }
+    }
+
+    stage ('Code Review with SonarQube') {
+      steps {
+        withSonarQubeEnv('sonarqube-server') {
+          sh """
+            mvn sonar:sonar \
+              -Dsonar.organization=bindesh-dev \
+              -Dsonar.projectKey=bindesh-dev_mvn-project
+          """
+        }
+      }
+    }
+   }
+   post {
+        success {
+            echo 'CI Pipeline completed successfully! Code is tested, reviewed, and packaged.'
+        }
+        failure {
+            echo 'CI Pipeline execution failed. Please check build console logs or SonarQube quality gate results.'
+        }
+    }
+}
+```
+
+## Step-06: Create a Jenkins Pipeline (job)
+
+- Open your Jenkins dashboard &rarr; **New Item**.
+  - **Name**: `maven-sonarqube-pipeline`
+  - **Job type**: Pipeline
+  - **Definition**: Pipeline script from SCM
+    - **SCM**: Git
+    - **Repository URL**: Enter your GitHub repo link (e.g., https://github.com)
+    - **Credentials**: If your repository is private, select your GitHub access credentials from the dropdown list.
+    - **Branches to build**: main
+    - **Script Path**: Verify this is set to Jenkinsfile
+- Click **Save**
+
+## Step-07: Trigger the Pipeline
+
+- Select the above created Jenkins job and click **Build now** button.
+
+- Jenkins will first download your Jenkinsfile from GitHub, parse the execution steps, check out your complete project files into the workspace, and run the Maven build to review straight to SonarQube.
+
+## Step-08: Verify the code review results in SonarQube
+
+- Navigate to your SonarQube Cloud Account &rarr; Review the results.
