@@ -1,10 +1,19 @@
-# Hands-on Lab: Create a Jenkins based CI Pipeline for Maven Application
+# Hands-on Lab: Create an automated Jenkins based CI Pipeline for building and Unit Testing Maven App
+
+`[Developer Commit] ──> [GitHub]──> [Jenkins Pipeline] ──> [Build Maven App] ──> [Unit Test Maven App]`
 
 ## Prerequisites
 
-- Jenkins Server
+- Jenkins Server with the following tools configured:
+  - java 21
+  - maven
+  - git
 - GitHub Account
 - GitHub Repository with a Maven Application (Java 21)
+
+## Install Jenkins Plugins
+
+## Generate GitHub Authentication Token (PAT) and Save it on Jenkins
 
 ## Create a Jenkinsfile
 
@@ -57,3 +66,9 @@ pipeline {
     }
 }
 ```
+
+## Create a Jenkins Job (Pipeline)
+
+## Push the changes to SCM (GitHub) to trigger the Pipeline
+
+## Verify the results | Unit Test results | Maven Build
