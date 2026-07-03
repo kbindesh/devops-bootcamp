@@ -73,8 +73,49 @@ The deployment models define the ownership, accessibility, and physical location
 
 ## 05. Setup AWS Account (Free Tier)
 
-- Reference: https://aws.amazon.com/free/
-- To create an AWS Account (free tier), kindly refer to this document:
+- To create a new AWS Free Tier account, visit the official Sign up page (https://aws.amazon.com/free/)
+
+- The updated AWS Free Tier gives new users $100 in upfront credits which will be valid for over a 6-month trial period.
+
+### Prerequisites
+
+1. Unique Email Address
+
+2. Active Mobile Phone Number (with SMS facility)
+3. Credit or Debit Cards (with International Transactions Enabled)
+
+### Step-by-Step Account Setup
+
+#### Step-01: Verify Email & Set Credentials
+
+- Navigate to official sign-up page https://aws.amazon.com/free/
+- Enter your root user email address and a unique AWS account name.
+- Click Verify email address to receive a 6-digit verification code in your email inbox.
+- Enter the code and set a strong, secure password for your root user account.
+
+#### Step-02: Select Account Type & Contact Details
+
+- Choose **Personal** if you are setting up this account for learning or individual practice.
+- Fill out your full name, phone number, country, and residential address.
+- Accept the AWS Customer Agreement to proceed
+
+#### Step-03: Provide Identity and Billing Verification
+
+- Enter a valid credit card, debit card, or UPI ID (available for Indian accounts).
+
+- `Note`: AWS will issue a temporary hold of $1 USD/Rs 2 (or equivalent local currency) to verify identity, which is refunded in 3–5 days.
+
+#### Step-04: Verify Phone Number
+
+- Choose to receive an identity verification code via _text message (SMS)_ or _voice call_.
+- Complete the security CAPTCHA, type in the received code, and click continue
+
+#### Step-05: Select the Free Support Plan
+
+- Select _Basic Support - Free_ to finish without enrolling in paid plans
+
+- Click _Complete Sign Up_.
+- AWS Account Activation usually processes in a few minutes, but can take up to 24 hours.
 
 ## 06. AWS Infrastructure
 
