@@ -2,7 +2,7 @@
 
 ### Scenario-1: New Joinee
 
-The New InternAlice just joined CloudCorp as a DevOps intern. Her manager wants her to be able to view and list objects in their Amazon S3 buckets for learning purposes, but she must not be able to delete anything.</br></br>
+The New Intern Alice just joined CloudCorp as a DevOps intern. Her manager wants her to be able to view and list objects in their Amazon S3 buckets for learning purposes, but she must not be able to delete anything.</br></br>
 `Question`:Question: How should the administrator configure her access?
 
     A) Give Alice the Root account password but ask her nicely not to delete anything.

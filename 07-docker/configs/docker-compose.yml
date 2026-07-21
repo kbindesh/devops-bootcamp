@@ -1,0 +1,26 @@
+name: example-compose-app
+
+services:
+  db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: dockeruser
+      POSTGRES_PASSWORD: dockerpass
+      POSTGRES_DB: sampledb
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sample.com
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pg-data:
+  pgadmin-data:
