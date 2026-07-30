@@ -12,7 +12,7 @@
 
 ## :zap: 02. Solution Architecture
 
-![terraform-project-diag](images\terraform-project-diag.png)
+![terraform-project-diag](images/terraform-project-diag.png)
 
 ## :file_folder: 03. Terraform Project Directory Structure
 
