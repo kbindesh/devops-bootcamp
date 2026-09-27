@@ -1,4 +1,4 @@
-# Hands-on Lab: Jenkins base CD Pipeline for Amazon EKS Application deployment
+# Project: Jenkins base Continuous Delivery (CD) Pipeline for building and deploying Apps on Amazon Elastic Kubernetes Service (EKS) Cluster
 
 ## Project Overview
 

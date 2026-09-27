@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: development
+  name: jenkins-app-deployer-role
+rules:
+  - apiGroups: ["", "apps"]
+    resources: ["deployments", "replicasets", "pods", "services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: development
+  name: jenkins-app-deployer-binding
+subjects:
+  - kind: User
+    name: jenkins-development-user # This matches the username in the ConfigMap below
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: jenkins-app-deployer-role
+  apiGroup: rbac.authorization.k8s.io

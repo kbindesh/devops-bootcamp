@@ -1,0 +1,38 @@
+groups:
+  - name: infrastructure_alerts
+    rules:
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU load on host {{ $labels.instance }}"
+          description: "CPU load is {{ $value | printf \"%.2f\" }}% for more than 5 minutes."
+
+      - alert: HostOutofMemory
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host out of memory on {{ $labels.instance }}"
+          description: "Available memory is below 10% (current: {{ $value | printf \"%.2f\" }}%)."
+
+      - alert: HostDiskSpaceRunningLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Free disk space on root filesystem is below 15% (current: {{ $value | printf \"%.2f\" }}%)."
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."

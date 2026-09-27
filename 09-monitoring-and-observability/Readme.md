@@ -93,3 +93,65 @@ sum(checkout_transactions_total)
 # Find the percentage of successful checkouts grouped by payment type
 sum by (method) (rate(checkout_transactions_total{status="success"}[5m]))
 ```
+
+## Lab: Setup Production-grade Observability using Prometheus and Grafana
+
+### Create AWS IAM Role for Monitoring instance (EC2)
+
+- Open the IAM Console and click **Roles** in the left navigation pane.
+- Click **Create role** &rarr; Under **Trusted entity type**, select **AWS service**.
+- Under Service or use case, select **EC2** from the dropdown menu &rarr; click **Next**.
+- On the **Add permissions** page, add following permissions:
+
+```bash
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeFilters"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+### Create Amazon EC2 Security Groups for Monitoring Instance (EC2) & Node Exporter (EC2)
+
+### Setup Monitoring Instance (EC2)
+
+#### Create `config/prometheus.yml`
+
+```yaml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "aws_ec2_infrastructure"
+    ec2_sd_configs:
+      - region: "us-east-1" # Replace with your target AWS Region
+        port: 9100
+    relabel_configs:
+      # Filter instances to only scrape those with the tag Role=Worker
+      - source_labels: [__meta_ec2_tag_Role]
+        regex: "Worker"
+        action: keep
+      # Extract the EC2 Instance ID and assign it as a clean label
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance_id
+      # Extract the custom Name tag of the EC2 instance and assign it to the instance label
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
+```
+
+#### Create `docker-compose.yml` file
+
+### Setup Node Exporter (EC2)
