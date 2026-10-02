@@ -1,38 +1,56 @@
 groups:
-  - name: infrastructure_alerts
+  - name: NodeExporterAlerts
     rules:
-      - alert: HostHighCpuLoad
-        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High CPU load on host {{ $labels.instance }}"
-          description: "CPU load is {{ $value | printf \"%.2f\" }}% for more than 5 minutes."
-
-      - alert: HostOutofMemory
-        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+      - alert: HostHostlayerDown
+        expr: up{job="node-exporter"} == 0
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "Host out of memory on {{ $labels.instance }}"
-          description: "Available memory is below 10% (current: {{ $value | printf \"%.2f\" }}%)."
+          summary: "Host down (instance {{ $labels.instance }})"
+          description: "Node Exporter has been down for more than 2 minutes."
 
-      - alert: HostDiskSpaceRunningLow
-        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Low disk space on {{ $labels.instance }}"
-          description: "Free disk space on root filesystem is below 15% (current: {{ $value | printf \"%.2f\" }}%)."
+          summary: "High CPU load (instance {{ $labels.instance }})"
+          description: "CPU usage is above 85% for more than 5 minutes. Current value: {{ $value | printf "%.2f" }}%"
 
-      - alert: InstanceDown
-        expr: up == 0
-        for: 1m
+      - alert: HostOutOfMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "Instance {{ $labels.instance }} down"
-          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+          summary: "Host out of memory (instance {{ $labels.instance }})"
+          description: "Node memory is filling up and has less than 10% available. Current memory usage: {{ $value | printf "%.2f" }}%"
+
+      - alert: HostDiskWillRunOutOfSpace
+        expr: (node_filesystem_free_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} * 100) < 15 and predict_linear(node_filesystem_free_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"}[1h], 8 * 3600) < 0
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host disk space filling up (instance {{ $labels.instance }}, device {{ $labels.device }}, mountpoint {{ $labels.mountpoint }})"
+          description: "Disk space available is less than 15% and is predicted to fill up within the next 8 hours based on the last 1 hour of usage. Current free space: {{ $value | printf "%.2f" }}%"
+
+      - alert: HostPredictOutOfInodes
+        expr: node_filesystem_files_free{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_files{fstype!~"tmpfs|fuse.lxcfs|overlay"} * 100 < 10 and predict_linear(node_filesystem_files_free{fstype!~"tmpfs|fuse.lxcfs|overlay"}[1h], 8 * 3600) < 0
+        for: 20m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host inodes filling up (instance {{ $labels.instance }}, device {{ $labels.device }}, mountpoint {{ $labels.mountpoint }})"
+          description: "Free disk inodes available are less than 10% and are predicted to run out within 8 hours. Current free node usage percentage: {{ $value | printf "%.2f" }}%"
+
+      - alert: HostNetworkReceiveErrors
+        expr: rate(node_network_receive_errors_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host network receive errors (instance {{ $labels.instance }}, interface {{ $labels.device }})"
+          description: "Network interface {{ $labels.device }} is experiencing packet drops/errors on receive greater than 1% over the last 2 minutes."
