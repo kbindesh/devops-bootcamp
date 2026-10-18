@@ -1,4 +1,4 @@
-# Hands-on Lab: Integrating SonarQube with Jenkins for Static Code Analysis
+# Hands-on Lab: Jenkins CI Pipeline demonstrating integration with SonarQube for Static Code Analysis
 
 - This project establishes an automated Continuous Inspection workflow by integrating SonarQube into a Jenkins CI pipeline.
 - It automatically triggers static code analysis on every code commit to identify the following early in the development lifecycle:
