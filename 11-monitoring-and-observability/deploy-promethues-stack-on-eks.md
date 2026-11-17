@@ -125,6 +125,34 @@ kubectl port-forward svc/monitoring-kube-prometheus-prometheus -n monitoring 909
 # Open http://localhost:9090 in your browser and navigate to Status > Targets to confirm cluster metrics are being scraped.
 ```
 
+## Step-8: Example PromQL queries for a live Amazon EKS cluster
+
+```bash
+# Cluster & Node Health (Infrastructure Layer)
+# Total Active Worker Nodes |
+count(kube_node_info)
+
+# CPU Utilization (%) per EKS Node
+100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# Memory Utilization (%) per EKS Node
+(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+
+# Disk Space Usage (%) on Root Volume
+100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})
+
+
+# Kubernetes Workloads & Deployments (Orchestration Layer)
+# Pods Count by Namespace|
+count by (namespace) (kube_pod_info)
+
+# Pods Stuck in Pending or Failed States
+sum by (namespace, phase) (kube_pod_status_phase{phase=~"Pending|Failed|Unknown"}) > 0
+
+# Top 5 CPU-Consuming Pods (in Cores)
+topk(5, sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!="", image!=""}[5m])))
+```
+
 ## Step-8: Publishing Both Web UIs on the Internet (using AWS Classic Load Balancer | not recommended for Production)
 
 ## Step-9: Production Security Hardening Reminders
