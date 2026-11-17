@@ -92,9 +92,7 @@ prometheus:
 Deploy the stack into the monitoring namespace using your custom values file:
 
 ```bash
-helm install monitoring prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --values monitoring-values.yaml
+helm install monitoring prometheus-community/kube-prometheus-stack --namespace monitoring --values monitoring-values.yaml
 ```
 
 ## Step-6: Verify Pods and Persistent Volumes
