@@ -191,6 +191,32 @@ my-app/
 
 ### Build Lifecycles and Phases
 
+#### The 3 Built-in Lifecycles
+Maven comes with three standard lifecycles, each handling a distinct job:
+  1. Default (Build): The main assembly line. It handles compiling, testing, packaging, and deploying your application.
+  2. Clean: Wipes out previous build outputs (like deleting the target/ directory) so you start fresh.
+  3. Site: Generates HTML project documentation and reports.
+
+#### Key Phases of the Default Lifecycle
+
+The Default lifecycle has over 20 phases, but in real-world DevOps pipelines, you will interact with these 7 core phases 99% of the time:
+
+| Order | Phase    | What Happens at This Station                                                       | DevOps Pipeline Context                                                        |
+| ----- | -------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1     | validate | Checks if pom.xml is valid and all required project info is present.               | Fails fast if configuration syntax is broken.                                  |
+| 2     | compile  | Translates human-readable .java source code into .class bytecode.                  | Catches syntax and compilation errors early.                                   |
+| 3     | test     | Runs unit tests (using frameworks like JUnit) against the compiled code.           | Stops the pipeline immediately if a unit test fails.                           |
+| 4     | package  | Bundles compiled code into a distributable format (e.g., .jar or .war).            | Creates the artifact ready for containerization (Docker) or staging.           |
+| 5     | verify   | Runs integration tests and quality checks on the packaged artifact.                | Often integrated with tools like SonarQube for code quality gates.             |
+| 6     | install  | Copies the packaged artifact into your local machine's repository (~/.m2).         | Allows other local projects on the same build agent to use it as a dependency. |
+| 7     | deploy   | Pushes the final artifact to a remote repository (e.g., Nexus, JFrog Artifactory). | Makes the release available to other teams and production servers.             |
+
+#### How Plugins Fit In (Goals)
+
+Phases are just empty placeholders; Plugins do the actual work. Every phase is bound to one or more plugin goals.
+- For example, during the compile phase, Maven triggers the maven-compiler-plugin:compile goal.
+- You can also run a plugin goal directly without triggering a lifecycle phase (e.g., mvn sonar:sonar to run a SonarQube scan).
+
 ## Hands-on Labs
 
 ### Lab-01: Create a sample Maven Project
