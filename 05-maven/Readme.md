@@ -287,7 +287,60 @@ Phases are just empty placeholders; Plugins do the actual work. Every phase is b
 
 ## Hands-on Labs
 
+### Verify Prerequisites
+
+- Before generating a project, ensure your Windows 11 machine has Java (JDK) and Maven installed and added to your System PATH.
+
+```bash
+java -version
+
+mvn -version
+
+# Both commands should return version numbers
+```
+
 ### Lab-01: Create a sample Maven Project
+
+- Instead of manually creating folders and writing a pom.xml from scratch, we use a Maven Archetype (a project template).
+- Navigate to a clean workspace folder (e.g., Desktop or C drive):
+
+```bash
+cd C:\
+
+mkdir mvn-project
+
+cd mvn-project
+
+# Open mvn-project directory in visual studio code
+code .
+```
+
+- Demonstrate the Build Lifecycle Phases
+
+```bash
+# validate (Checks project structure) | Maven reads the pom.xml to verify the XML syntax is valid and all required project info is present
+mvn validate
+
+# compile (Translates Java code to Bytecode) | Maven runs validate first, then compiles src\main\java\...\App.java | a new target\classes folder has appeared containing App.class
+mvn compile
+
+# test (Runs Unit Tests) | Maven runs validate → compile → test-compile → test. It executes the sample unit test in src\test\java\...\AppTest.java
+mvn test
+
+# package (Creates the Deployable Artifact) | Runs everything up to test, then bundles the compiled code into the format specified in pom.xml (a .jar file)
+mvn package
+
+# You can actually run this built artifact right now on Windows
+java -cp target\lifecycle-app-1.0-SNAPSHOT.jar com.devops.demo.App
+
+# install (Publishes to Local Repository) | Runs everything up to package, then copies the .jar into your local machine's Maven cache so other local projects can use it as a dependency
+mvn install
+
+# clean (Wipes the Slate Clean) | clean is actually a separate lifecycle. It deletes the entire target\ directory so old build artifacts don't contaminate future builds.
+mvn clean
+
+# DevOps Best Practice: Always combine them in your CI scripts (mvn clean package or mvn clean test) to guarantee a fresh build every single time.
+```
 
 ### Lab-02: Add a dependency (like JUnit), see it download into ~/.m2
 
