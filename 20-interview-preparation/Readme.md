@@ -5,15 +5,15 @@
 3. Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
 4. Interview Tips and Tricks
    
-## Interview Readiness Checklist
+## 01. Interview Readiness Checklist
 
 To prepare effectively for a DevOps Engineer interview, focus on demonstrating end-to-end automation, system reliability, and troubleshooting under pressure rather than memorizing isolated tool commands.
 </br></br>
 You may use this checklist to audit your readiness across core technical domains, scenario-based architecture, and behavioral storytelling.
 
-### 1. Core Technical Pillars
+### 1.1 Core Technical Pillars
 
-#### Linux & Networking Fundamentals
+#### 1.1.1 Linux & Networking Fundamentals
 
 - Performance Triage
   - Diagnose CPU, memory, disk I/O, and network bottlenecks on live servers using top/htop, vmstat, iostat, free -h, df -h, and du -sh.
@@ -26,7 +26,7 @@ You may use this checklist to audit your readiness across core technical domains
 - Network Troubleshooting
   - Debug DNS, routing, and SSL/TLS issues using dig, curl -vk, traceroute, ping, and iptables/security groups.
 
-#### Git & GitHub
+#### 1.1.2 Git & GitHub
 
 - Branching & Workflow Strategies
   - Articulate the trade-offs between Trunk-Based Development (TBD) and GitFlow for continuous delivery.
@@ -37,7 +37,7 @@ You may use this checklist to audit your readiness across core technical domains
 - Webhooks & Auth
   - Set up GitHub Webhooks to trigger Jenkins builds automatically and manage SSH deploy keys vs. Personal Access Tokens (PATs).
 
-#### CI/CD Automation: Jenkins, SonarQube & Nexus
+#### 1.1.3 CI/CD Automation: Jenkins, SonarQube & Nexus
 
 - Declarative Pipelines
   - Structure multi-stage Jenkinsfile pipelines using agent, environment, stages, when conditions, parallel execution, and post cleanup blocks.
@@ -48,14 +48,14 @@ You may use this checklist to audit your readiness across core technical domains
 - Artifact Management (Nexus)
   - Distinguish between Hosted, Proxy, and Group repositories in Nexus; automate pushing versioned build artifacts (JARs, npm packages, or Docker images) and enforcing retention/cleanup policies.
 
-#### Containers: Docker
+#### 1.1.4 Containers: Docker
 
 - Optimized Dockerfiles: Write multi-stage Dockerfiles to keep production images small, order instructions to maximize layer caching, and use .dockerignore.
 - Container Security: Run containers as a non-root user (USER), scan images for CVEs (e.g., Trivy), avoid hardcoding secrets in ENV/ARG, and use minimal base images (alpine or distroless).
 - Networking & Storage: Differentiate Docker network drivers (bridge, host, none) and persistent storage options (volumes vs. bind mounts).
 - Troubleshooting: Inspect failing containers using docker logs, docker exec -it, docker inspect, and docker stats.
 
-#### Container Orchestration: Kubernetes
+#### 1.1.5 Container Orchestration: Kubernetes
 
 - Cluster Architecture
   - Explain how the Control Plane (kube-apiserver, etcd, kube-scheduler, kube-controller-manager) interacts with Worker Nodes (kubelet, kube-proxy, container runtime).
@@ -68,7 +68,7 @@ You may use this checklist to audit your readiness across core technical domains
 - Scaling & Packaging
   - Configure Horizontal Pod Autoscaler (HPA) and package multi-environment deployments cleanly using Helm charts.
 
-#### Infrastructure as Code: Terraform
+#### 1.1.6 Infrastructure as Code: Terraform
 
 - State Management
   - Configure remote state storage with locking (e.g., AWS S3 + DynamoDB), recover safely from stuck state locks, and explain how Terraform detects configuration drift.
@@ -77,7 +77,7 @@ You may use this checklist to audit your readiness across core technical domains
 - Safe Execution & Lifecycle
   - Automate terraform fmt, validate, and plan checks in Jenkins, use lifecycle rules (create_before_destroy, prevent_destroy), and bring existing manual cloud resources under management with terraform import.
 
-#### Monitoring & Observability: Prometheus & Grafana
+#### 1.1.7 Monitoring & Observability: Prometheus & Grafana
 
 - Prometheus Architecture
   - Explain Prometheus's pull-based scraping model, Service Discovery (e.g., scraping Kubernetes pods via annotations), Exporters (node_exporter, kube-state-metrics), and Alertmanager routing/silencing.
@@ -113,15 +113,72 @@ Prepare structured stories (Situation, Task, Action, Result) for these three com
 - Prepare Questions for the Interviewer
   - Ask about their deployment frequency, on-call rotation structure, current biggest infrastructure bottleneck, and how they handle post-mortems.
 
-## Interview Preparation Plan
+## 02. Interview Preparation Plan
 
-### The "2-Minute Pitch" & Architecture Walkthrough
-### Live "Break-Fix" Troubleshooting Labs
-### Rapid-Fire Hot-Seat Mock Interviews 
+### 2.1 The "2-Minute Pitch" & Architecture Walkthrough
 
-## Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
+#### 2.1.1 Activity: End-to-End Architecture Pitch | "The 3-Minute Capstone Hot-Seat"
 
-### 1. ATS Resume Surgery & Formatting Rules (12 Mins)
+- *Setup*: Share project architecture diagram and explain the full lifecycle under a 3-minute timer.
+- *Real Use-Case Prompt*: "Walk me through what happens from git push to production traffic, including what happens if a security check fails."
+- *Expected Flow*
+  - Source: PR opened on GitHub → triggers Jenkins multibranch pipeline via webhook.
+  - Build & Gate: Jenkins runs unit tests → SonarQube scans code (blocks build if critical bugs or <80% coverage) → builds multi-stage Docker image tagged with Git SHA → pushes to registry.
+  - Deploy: Terraform ensures EKS/AKS cluster state → Jenkins triggers Kubernetes rolling update.
+  - Observe: Prometheus scrapes /metrics; Grafana triggers Slack alert if HTTP 5xx errors exceed 1%.
+
+### 2.2 CI/CD & DevSecOps Drills
+
+#### 2.2.1 Activity: "The Friday 5 PM Production Hotfix" | Git & GitHub
+
+- Real Use-Case
+  - *Your team uses Trunk-Based Development. A critical bug hits production, while 3 developers have untested features merged into main. How do you deploy ONLY the fix?*
+- Expected Answer
+  - Locate the exact Git release tag currently running in production → create a hotfix/bug-fix branch directly from that tag → test and deploy from the hotfix branch → cherry-pick/merge the fix back into main.
+
+#### 2.2.2 Activity: "Controller Crash & Queue Bottleneck" | Jenkins
+
+- Real Use-Case
+  - *You run 30 microservices on Jenkins. Builds wait 20 minutes in queue, and the Jenkins Controller crashes with OutOfMemoryError.*
+- Expected Answer
+  - Set executors on the Jenkins Controller to 0 so it only orchestrates. Offload all Docker builds to ephemeral/dynamic build agents (Kubernetes Pod templates or auto-scaling EC2 agents) that spin up per job and terminate afterward, and move duplicate pipeline code into Jenkins Shared Libraries.
+
+#### 2.2.3 Activity: "The Legacy Monolith Block" | SonarQube
+
+- Real Use-Case
+  - *You add SonarQube to a 5-year-old repo. The Quality Gate fails immediately due to 3,500 existing code smells, halting releases. Developers ask you to turn it off. What do you do?*
+- Expected Answer
+  - Enable SonarQube's "Clean as You Code" (New Code Period) policy. Configure the Quality Gate to enforce strict rules (0 new bugs/vulnerabilities, >80% coverage) only on newly added or modified code, allowing immediate releases while gradually improving code health.
+
+#### 2.2.4 Activity: "Spot the 4 Dockerfile Flaws" (Display a bloated FROM ubuntu:latest file running as root) | Docker
+
+- Real Use-Case
+  - *Security flags critical OS CVEs in your container, and pod startup is slow due to a 1.1 GB image.*
+- Expected Answer
+  1. Switch to a multi-stage build using distroless or alpine for the final runtime stage (~35 MB, minimal CVEs).
+  2. Copy dependency manifests (package.json/requirements.txt) before source code (COPY . .) to preserve Docker layer caching.
+  3. Add USER 1001 to run as a non-root user.
+
+#### 2.2.5 Activity: "60-Second Pod Triage Relay" (4 students diagnose 4 live failure states) | Kubernetes
+
+- Real Use-Cases & Answers
+  - *CrashLoopBackOff*: Run kubectl logs <pod> --previous to inspect the crash stack trace (usually missing ConfigMap/Secret env var, bad DB URL, or aggressive Liveness Probe).
+  - *OOMKilled (Exit Code 137)*: Container exceeded resources.limits.memory. Check real usage via kubectl top pod and increase memory limits or fix app memory leaks.
+  - *ImagePullBackOff*: Run kubectl describe pod <pod> to inspect Events—usually an invalid image tag or missing imagePullSecret.
+  - *Service Unreachable (Running pods, curl times out)*: Run kubectl get endpoints <svc>. If <none>, the Service selector labels do not match Pod labels, or targetPort mismatches the container port.
+
+#### 2.2.6 Activity: "Console Drift Recovery" | Terraform
+
+- Real Use-Case: *Someone manually deleted a production security group in the AWS console. Running terraform plan now wants to recreate dependent resources. How do you recover safely?*
+- Expected Answer: Never blindly run apply. Use targeted apply (terraform apply -target=aws_security_group.app_sg) to recreate just the deleted resource (or terraform import if recreated manually), verify terraform plan shows No changes, and enforce read-only console IAM policies so all changes flow through CI/CD with S3 + DynamoDB state locking.
+
+### 2.3 Live "Break-Fix" Troubleshooting Labs
+
+### 2.4 Rapid-Fire Hot-Seat Mock Interviews 
+
+## 03. Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
+
+### 3.1 ATS Resume Surgery & Formatting Rules (12 Mins)
 
 #### Activity: "The 7-Second Recruiter Scan"
 
@@ -136,8 +193,8 @@ Prepare structured stories (Situation, Task, Action, Result) for these three com
 - Winning Answer
   - "Engineered an automated CI/CD pipeline using GitHub webhooks, Jenkins, and Docker to deploy microservices onto Kubernetes, cutting release cycles from 2 hours to 12 minutes."
 
-### 2. GitHub Proof-of-Work Audit (8 Mins)
+### 3.2 GitHub Proof-of-Work Audit (8 Mins)
 
-### 3. 2026 Job Market & AI Positioning Strategy (10 Mins)
+### 3.3 2026 Job Market & AI Positioning Strategy (10 Mins)
 
-## Tips & Tricks to Get an Offer Faster (2026 Market)
+## 04. Tips & Tricks to Get an Offer Faster (2026 Market)
