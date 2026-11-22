@@ -1,5 +1,10 @@
 # Interview Preparation Guide for DevOps Engineers
 
+1. Interview Readiness Checklist
+2. Interview Preparation Plan
+3. Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
+4. Interview Tips and Tricks
+   
 ## Interview Readiness Checklist
 
 To prepare effectively for a DevOps Engineer interview, focus on demonstrating end-to-end automation, system reliability, and troubleshooting under pressure rather than memorizing isolated tool commands.
@@ -83,15 +88,56 @@ You may use this checklist to audit your readiness across core technical domains
 
 ### 2. Hands-On & System Design Preparation
 
+- Whiteboard an End-to-End Architecture
+  - Practice drawing how a code commit travels from a developer's laptop to production traffic with zero downtime, including rollbacks, secrets injection, and monitoring.
+- Live Coding / Scripting
+  - Refresh basic scripting in Bash (text parsing with awk, sed, grep, exit codes) and Python (API calls, JSON parsing, boto3/cloud SDK automation).
+- Cost Optimization (FinOps)
+  - Prepare 1–2 examples of how you reduced cloud spend (e.g., Spot instances, right-sizing, S3 lifecycle policies, unused volume cleanup).
+
 ### 3. Behavioral & Incident Management (STAR Method)
 
+Prepare structured stories (Situation, Task, Action, Result) for these three common prompts:
+
+- The Production Outage
+  - "Tell me about a time production went down." Highlight how you triaged the issue, communicated with stakeholders, mitigated impact first, and ran a blameless post-mortem afterward.
+- Developer Friction / Culture
+  - "How do you handle a developer pushing back against security or deployment guardrails?" Show empathy, collaboration, and how you built self-service tooling that made the safe path the easiest path.
+- Automation Win
+  - "What is a manual bottleneck you automated away?" Quantify the time saved or error rate reduced.
+
 ### 4. Final 24-Hour Check
+
+- Review Your Resume Line-by-Line
+  - Be ready to explain why you chose every tool listed on your resume—and what its drawbacks were.
+- Prepare Questions for the Interviewer
+  - Ask about their deployment frequency, on-call rotation structure, current biggest infrastructure bottleneck, and how they handle post-mortems.
 
 ## Interview Preparation Plan
 
 ### The "2-Minute Pitch" & Architecture Walkthrough
 ### Live "Break-Fix" Troubleshooting Labs
 ### Rapid-Fire Hot-Seat Mock Interviews 
-### Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
+
+## Resume, Portfolio, 2026 Hiring Strategy & Offer Tactics
+
+### 1. ATS Resume Surgery & Formatting Rules (12 Mins)
+
+#### Activity: "The 7-Second Recruiter Scan"
+
+- Key Rules
+  1. Strictly 1 page (0–3 yrs exp), single-column, text-selectable PDF, zero photos or skill percentage bars.
+  2. Order of sections: Header → 3-Line Summary → Categorized Skills → Capstone Project (with GitHub link) → Experience → Certifications/Education.
+  
+#### Activity: "Tool-List to Impact" Live Rewrite
+
+- Prompt on Screen
+  - Rewrite "Used Jenkins, Docker, and Kubernetes to deploy web applications."
+- Winning Answer
+  - "Engineered an automated CI/CD pipeline using GitHub webhooks, Jenkins, and Docker to deploy microservices onto Kubernetes, cutting release cycles from 2 hours to 12 minutes."
+
+### 2. GitHub Proof-of-Work Audit (8 Mins)
+
+### 3. 2026 Job Market & AI Positioning Strategy (10 Mins)
 
 ## Tips & Tricks to Get an Offer Faster (2026 Market)
